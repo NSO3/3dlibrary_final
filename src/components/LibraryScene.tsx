@@ -1,7 +1,6 @@
 import { Canvas } from '@react-three/fiber'; 
 // Environment, OrbitControls を drei からインポート
 import { OrbitControls, Environment } from '@react-three/drei';
-import * as THREE from 'three';
 // Bookshelf コンポーネントをインポート
 import Bookshelf from './Bookshelf.tsx';
 

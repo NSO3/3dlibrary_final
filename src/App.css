@@ -1,7 +1,13 @@
+/* 画面全体に広がるように設定 */
 html, body, #root {
-  width: 100%;
-  height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  height: 100%; /* これが最も重要！高さを画面いっぱいに */
+  width: 100%;  /* 幅を画面いっぱいに */
+  overflow: hidden; /* スクロールバーが表示されないようにする */
+}
+
+/* Canvasの背景色とHTMLの背景色を合わせる（デバッグを容易にするため） */
+body {
+  background-color: #a0a0a0;
 }
