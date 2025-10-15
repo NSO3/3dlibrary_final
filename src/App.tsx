@@ -61,13 +61,21 @@ function LibraryScene() {
 
         <Wall /> // 💡 Wallを復活
 
-        {/* 💡 まずは一つだけ、安定した座標で配置して動作確認 */}
-        <Bookshelf position={[0, -5, 0]} rotationY={0} /> 
+        // 💡 1. 左側の列 (X = -7.5 に並べる)
+        // Y=-5 は床面の座標を基準に、Bookshelf.tsx内のMODEL_Y_ADJUSTMENT (2.0)で調整される想定
+        <Bookshelf position={[-7.5, -5, 0]} rotationY={0} bookIdOffset={1000} /> // 部屋の手前
+        <Bookshelf position={[-7.5, -5, 10]} rotationY={0} bookIdOffset={2000} /> // 奥に連ねる
+        <Bookshelf position={[-7.5, -5, 20]} rotationY={0} bookIdOffset={3000} /> // さらに奥
+
+        // 💡 2. 右側の列 (X = 7.5 に並べる)
+        // rotationY={Math.PI} で180度回転させ、左の列と向かい合わせに
+        <Bookshelf position={[7.5, -5, 0]} rotationY={Math.PI} bookIdOffset={4000} /> 
+        <Bookshelf position={[7.5, -5, 10]} rotationY={Math.PI} bookIdOffset={5000} /> 
+        <Bookshelf position={[7.5, -5, 20]} rotationY={Math.PI} bookIdOffset={6000} /> 
         
-        {/* 動作確認後、複数の本棚を再導入する際は、このコメントアウトを解除する
-        <Bookshelf position={[-7.5, -5, 0]} rotationY={0} /> 
-        <Bookshelf position={[-7.5, -5, 10]} rotationY={0} />
-        // ... 他の本棚
+        {/*
+          // 💡 これまでコメントアウトされていた単一の本棚は削除します
+          <Bookshelf position={[0, -5, 0]} rotationY={0} /> 
         */}
         
         <OrbitControls enableDamping dampingFactor={0.05} />

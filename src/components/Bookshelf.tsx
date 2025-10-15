@@ -7,9 +7,10 @@ import * as THREE from 'three';
 interface BookshelfProps {
   position: [number, number, number]; 
   rotationY: number; 
+  bookIdOffset?: number;
 }
 
-const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY }) => {
+const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset = 0  }) => {
   const gltf = useGLTF('/my_bookshelf.glb'); 
   const BOOKSHELF_SCALE: [number, number, number] = [15, 8, 15]; // 確定したスケール値
     // 💡 ここでモデル自体のY位置を調整する！
@@ -46,14 +47,14 @@ const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY }) => {
         size={[0.2, 1.2, 0.8]} 
         color="blue" 
         castShadow={true}
-        bookId={101} // 💡 IDを割り当てる (例: 101)
+        bookId={101+ bookIdOffset} //  オフセット値を加算
       />
       <Book 
         position={[-0.2, -0.4 + MODEL_Y_ADJUSTMENT, 0]} 
         size={[0.2, 1.0, 0.7]} 
         color="random" 
         castShadow={true}
-        bookId={102} // 💡 別のID (例: 102)
+        bookId={102+ bookIdOffset} //  オフセット値を加算
       />
       
       {/* 例: 2段目の棚（Y座標を調整） */}
