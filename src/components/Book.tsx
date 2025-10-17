@@ -1,39 +1,57 @@
 import React from 'react';
-import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
+// 💡 データ連携のためのインポート
+import { findBookById } from '../data/bookData'; 
+import type { BookMetadata } from '../data/bookData'; 
+
 
 // 本のプロパティを定義
 interface BookProps {
-  position: [number, number, number]; // 本の位置
-  size?: [number, number, number];    // 本のサイズ (幅, 高さ, 奥行き)
-  color?: string;                     // 本の色
+  position: [number, number, number]; 
+  size?: [number, number, number]; 
+  color?: string;                     
   castShadow?: boolean;
-  bookId: number;
+  bookId: number; // 必須
 }
 
-const Book: React.FC<BookProps> = ({ position, size = [0.2, 1.2, 0.8], color = 'red', castShadow = true , bookId}) => {
+// ユーティリティ関数: 乱数生成
+const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+
+const Book: React.FC<BookProps> = ({ position, size: propSize, color: propColor, castShadow = true , bookId}) => {
   
-  const navigate = useNavigate(); // 💡 ナビゲーションフックを使用
+  const navigate = useNavigate(); 
+  
+  // 💡 bookDataからメタデータを取得
+  const metadata: BookMetadata | undefined = findBookById(bookId);
 
-  // マテリアルの色をランダムに設定する（オプション）
-  const bookColor = color === 'random' 
-    ? `#${new THREE.Color(Math.random(), Math.random(), Math.random()).getHexString()}`
-    : color;
+  // 💡 3Dモデルに使用する最終的な色とサイズを決定
+  // bookDataに色があればそれを使い、なければ propColor を使い、それもなければ 'gray' を使う
+  const bookColor = metadata ? metadata.color : propColor || 'gray'; 
+  
+  // 💡 Bookshelf.tsxからサイズが渡されていない場合はデフォルト値を使用
+  const finalSize = propSize || [0.2, 1.2, 0.8]; 
 
-  // 💡 クリックハンドラ関数
+  // 💡 リアリティのためのランダムな回転を生成
+  // Y軸回転（ヨー）: 横方向の回転 (約±28度)
+  const rotationY = rand(-0.5, 0.5); // ラジアン
+  
+  // 💡 【重要】Z軸回転（ロール/傾き）: はみ出しを防ぐため非常に小さな値に制限 (約±1度)
+  const rotationZ = rand(-0.02, 0.02); // ラジアン 
+
   const handleClick = (e: any) => {
-    e.stopPropagation(); // 重なり合うオブジェクトへのイベント伝播を防ぐ
-    console.log(`Book ID: ${bookId} clicked!`);
-    
-    // 💡 詳細ページへ遷移 (例: /book/1)
+    e.stopPropagation(); 
     navigate(`/book/${bookId}`); 
   };
 
   return (
-    <mesh position={position} castShadow={castShadow} onClick={handleClick}>
-      {/* BoxGeometry: 本の形状（幅、高さ、奥行き） */}
-      <boxGeometry args={size} /> 
-      {/* MeshStandardMaterial: 本の質感 */}
+    <mesh 
+      position={position} 
+      castShadow={castShadow} 
+      onClick={handleClick}
+      // 💡 ランダムな回転を適用
+      rotation={[0, rotationY, rotationZ]} 
+    >
+      <boxGeometry args={finalSize} /> 
       <meshStandardMaterial color={bookColor} />
     </mesh>
   );

@@ -126,8 +126,6 @@ const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset
         <Book 
           key={book.key}
           position={book.position} 
-          size={book.size} 
-          color={book.color} 
           castShadow={true}
           bookId={book.bookId}
         />
