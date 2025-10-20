@@ -1,4 +1,4 @@
-// src/components/Bookshelf.tsx
+// src/components/Bookshelf.tsx (Y座標修正版)
 
 import { useGLTF } from '@react-three/drei';
 import React from 'react';
@@ -9,79 +9,91 @@ import * as THREE from 'three';
 interface BookshelfProps {
   position: [number, number, number]; 
   rotationY: number; 
-  bookIdOffset?: number; // 👈 複数本棚対応で追加されたプロパティを再追加
+  bookIdOffset: number; // IDのオフセット値
 }
 
 // ----------------------------------------------------
-// ユーティリティ関数
+// ユーティリティ関数 (変更なし)
 // ----------------------------------------------------
 const rand = (min: number, max: number) => Math.random() * (max - min) + min;
 const randColor = () => `#${new THREE.Color(Math.random(), Math.random(), Math.random()).getHexString()}`;
 
 // ----------------------------------------------------
-// 本のランダム生成関数
+// 本の配置定数
+// ----------------------------------------------------
+const BOOKSHELF_SCALE: [number, number, number] = [15, 8, 15];
+
+// 💡 【修正点１】モデル自体のY位置調整を定数で保持
+const MODEL_Y_ADJUSTMENT = 2.0; 
+
+// 💡 【修正点２】棚のY座標の中心位置を、グローバルなモデルの中心(Y=-3.0)からの相対位置で定義
+// モデルの中心 (-5, -5, 0) + [0, MODEL_Y_ADJUSTMENT, 0] = (-5, -3, 0)
+// 本棚モデルの中心Y座標 (-3.0) を基準とする。
+const BOOK_POSITION_Y_BASE = -3.0; // 本棚の垂直方向の中心Y座標
+
+// 💡 【修正点３】棚のY座標の絶対位置を定義（モデルの中心Y=-3.0を基準）
+// モデルの棚の相対的な高さに合わせて調整
+const SHELF_Y_CENTERS = [
+    BOOK_POSITION_Y_BASE + 0.9, // 上から1段目 (-3.0 + 0.9 = -2.1)
+    BOOK_POSITION_Y_BASE + 0.1, // 上から2段目 (-3.0 + 0.1 = -2.9)
+    BOOK_POSITION_Y_BASE - 0.7, // 上から3段目 (-3.0 - 0.7 = -3.7)
+    BOOK_POSITION_Y_BASE - 1.5, // 上から4段目 (-3.0 - 1.5 = -4.5)
+];
+
+const X_RANGE: [number, number] = [-0.5, 0.5]; 
+// 一つの棚に配置する本の最大数
+//const MAX_BOOKS_PER_SHELF = 10;
+// BookDAta.tsが少ないのと見栄えの関係でこの値で
+const MAX_BOOKS_PER_SHELF = 1; 
+
+// ----------------------------------------------------
+// 本のランダム生成関数 (変更なし)
 // ----------------------------------------------------
 const generateRandomBooks = (
-  shelfYCenter: number, // 棚のY座標の中心
-  xRange: [number, number], // X座標の配置範囲
-  maxBooks: number, // 配置する本の最大数
-  startId: number, // 本に割り当てるIDの開始値
+  shelfYCenter: number, 
+  xRange: [number, number], 
+  maxBooks: number, 
+  startId: number, 
 ) => {
   const books = [];
-  let currentX = xRange[0]; // X軸の開始位置
+  let currentX = xRange[0]; 
   let currentId = startId;
+  const Z_OFFSET = rand(-0.02, 0.02); 
 
   while (currentX < xRange[1] && books.length < maxBooks) {
-    // 💡 1. ランダムなサイズを決定
-    const width = rand(0.15, 0.35); // 幅 (X軸)
-    const height = rand(1.0, 1.4);   // 高さ (Y軸) - 本棚の高さに合わせて調整
-    const depth = rand(0.7, 1.0);    // 奥行き (Z軸)
-
-    // 💡 2. 本の位置を決定
-    const x = currentX + width / 2; // X位置は、現在のX位置 + 本の幅の半分
-    const y = shelfYCenter + height / 2; // Y位置は、棚のYの中心 + 本の高さの半分
-    // Z位置は本棚の奥行き方向でランダムにずらす
-    const z = rand(1, -1.0); 
+    const bookWidth = rand(0.15, 0.25); 
+    const bookHeight = rand(1.0, 1.3);
+    const bookDepth = rand(0.7, 0.9);
     
-    // 許容範囲を超えたら終了
-    if (x + width / 2 > xRange[1]) break;
+    const bookPositionX = currentX + bookWidth / 2;
+    
+    if (bookPositionX + bookWidth / 2 > xRange[1]) break; 
 
-    books.push({
-      key: currentId,
-      bookId: currentId,
-      position: [x, y, z] as [number, number, number],
-      size: [width, height, depth] as [number, number, number],
-      color: randColor(),
-    });
-
-    // 💡 3. 次の本のX位置を決定 (本の幅 + ランダムな隙間)
-    currentX += width + rand(0.10, 1.00);
+    books.push(
+      <Book 
+        key={currentId}
+        bookId={currentId} 
+        // 💡 ここでの位置は Bookshelf の group のローカル座標系なので、
+        // group の位置 ([0, 0, 0]) からの相対位置で定義すれば OK。
+        position={[bookPositionX, shelfYCenter + 5, Z_OFFSET]} // 💡 group の Y=-5 を打ち消すため +5 
+        size={[bookWidth, bookHeight, bookDepth]}
+        color={randColor()}
+      />
+    );
+    
+    currentX = bookPositionX + bookWidth / 2 + rand(0.05, 0.1); 
     currentId++;
   }
   return books;
 };
 
 // ----------------------------------------------------
-// Bookshelf コンポーネント本体
+// Bookshelf コンポーネント
 // ----------------------------------------------------
-const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset = 0 }) => {
+const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset }) => {
   const gltf = useGLTF('/my_bookshelf.glb'); 
-  const BOOKSHELF_SCALE: [number, number, number] = [15, 8, 15]; // 確定したスケール値
-  const MODEL_Y_ADJUSTMENT = 2.0; // モデルのY位置調整
   
-  // 💡 ランダム配置のためのパラメータ定義
-  // モデルの中心Y=0からの相対座標 + MODEL_Y_ADJUSTMENT (2.0)
-  const SHELF_Y_CENTERS = [
-    -0.4 + MODEL_Y_ADJUSTMENT -1, // 1段目 (以前の -0.4)
-    0.2 + MODEL_Y_ADJUSTMENT -1,  // 2段目 (以前の 0.2)
-    0.8 + MODEL_Y_ADJUSTMENT -1,  // 3段目 (推測)
-    1.4 + MODEL_Y_ADJUSTMENT -1,  // 4段目 (推測)
-  ];
-  const X_RANGE: [number, number] = [0, 1]; 
-  const MAX_BOOKS_PER_SHELF = 1; // 一つの棚に配置する本の最大数
-
-  // 💡 全ての棚のデータを生成
-  const allBooks = React.useMemo(() => {
+  const bookElements = React.useMemo(() => {
     let generatedBooks: any[] = [];
     let currentId = bookIdOffset;
 
@@ -93,15 +105,13 @@ const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset
         currentId,
       );
       generatedBooks = [...generatedBooks, ...booksOnShelf];
-      currentId += MAX_BOOKS_PER_SHELF; // IDを次の棚へ進める
+      currentId += MAX_BOOKS_PER_SHELF; 
     });
     return generatedBooks;
-  }, [bookIdOffset]); // bookIdOffset が変わったときに再生成
+  }, [bookIdOffset]); 
 
-  // 💡 モデルのシーンをクローンして、複数のインスタンスで再利用できるようにする
   const clonedScene = React.useMemo(() => gltf.scene.clone(), [gltf.scene]);
 
-  // 💡 モデル内の全てのメッシュに影の設定を適用
   clonedScene.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       child.castShadow = true;
@@ -111,30 +121,21 @@ const Bookshelf: React.FC<BookshelfProps> = ({ position, rotationY, bookIdOffset
 
   return (
     <group 
-        position={position}
+        // 💡 App.tsxで定義された位置 (例: [-7.5, -5, 0])
+        position={position} 
         rotation={[0, rotationY, 0]} 
     >
       <primitive
         object={clonedScene} 
         scale={BOOKSHELF_SCALE} 
+        // 💡 モデルを地面に合わせるための調整 (モデルの中心を Y=-3.0 にする)
         position={[0, MODEL_Y_ADJUSTMENT, 0]} 
         rotation={[0, 0, 0]} 
       />
 
-      {/* ----------- 本のランダム配置 ----------- */}
-      {allBooks.map((book) => (
-        <Book 
-          key={book.key}
-          position={book.position} 
-          castShadow={true}
-          bookId={book.bookId}
-        />
-      ))}
-      
+      {bookElements}
     </group>
   );
 };
-
-useGLTF.preload('/my_bookshelf.glb'); 
 
 export default Bookshelf;

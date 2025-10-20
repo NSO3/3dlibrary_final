@@ -1,26 +1,26 @@
+// src/App.tsx 
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { Environment } from '@react-three/drei';
 import Bookshelf from './components/Bookshelf'; 
-import Floor from './components/Floor';
-import Wall from './components/Wall'; 
+import Floor from './components/Floor'; 
+import Wall from './components/Wall';   
 import { Suspense, useEffect } from 'react';
-// react-router-dom から必要なコンポーネントをインポート
-import { BrowserRouter, Routes, Route, useParams, Link } from 'react-router-dom'; 
-import { findBookById } from './data/bookData'; 
-import type { BookMetadata } from './data/bookData'; // 👈 'type' を使用して型のみをインポート
+import { BrowserRouter, Routes, Route, useParams, Link } from 'react-router-dom'; // Linkを追加
+import CameraFocus from './components/CameraFocus'; 
+// 💡 【修正点】BookMetadata は型であるため、'import type' を使用
+import type { BookMetadata } from './data/bookData'; 
+// 💡 findBookById は値（関数）であるため、通常の 'import' を使用
+import { findBookById } from './data/bookData';
 
-// シーン全体の明るさ調整のためのProps
+
 interface AdjusterProps {
     intensity: number;
 }
 
-// 環境光による露出（明るさ）を調整するコンポーネント
-//    Environment Mapの強すぎる反射を抑え、シーン全体が白飛びしないように制御します。
 const EnvironmentAdjuster: React.FC<AdjusterProps> = ({ intensity }) => {
   const { gl } = useThree();
   useEffect(() => {
-    // gl.toneMappingExposure のデフォルトは 1.0 です。
-    gl.toneMappingExposure = intensity; // intensityの値で露出を制御
+    gl.toneMappingExposure = intensity; 
   }, [gl, intensity]);
   
   return null;
@@ -29,22 +29,19 @@ const EnvironmentAdjuster: React.FC<AdjusterProps> = ({ intensity }) => {
 
 
 // ----------------------------------------------------
-// ライブラリの3Dシーン (3D要素を復活させる)
+// ライブラリの3Dシーン 
 // ----------------------------------------------------
 function LibraryScene() {
   return (
-    <Canvas shadows camera={{ position: [20, 10, 20], fov: 60 }}> {/* 💡 以前のカメラ位置に戻す */}
+    <Canvas shadows camera={{ position: [20, 10, 20], fov: 60 }}>
       <Suspense fallback={null}> 
         
-        {/* 光源を復活 */}
-        <ambientLight intensity={1.0} /> 
         <directionalLight 
-            position={[10, 15, 10]} 
+            position={[10, 20, 10]} 
             intensity={1} 
             castShadow={true}
             shadow-mapSize-width={2048} 
             shadow-mapSize-height={2048} 
-            // 影のカメラサイズを復活
             shadow-camera-left={-30}
             shadow-camera-right={30}
             shadow-camera-top={30}
@@ -52,53 +49,59 @@ function LibraryScene() {
             shadow-camera-near={1} 
             shadow-camera-far={50} 
         />
+        <ambientLight intensity={0.5} /> 
 
-        {/* Environmentと露出調整を復活 */}
         <Environment preset="warehouse" background={true} />
-        {/* 環境光の露出（明るさ）を調整する。数値が小さいほど暗くなります。 */}
         <EnvironmentAdjuster intensity={0.7} /> 
 
-        <Floor />
+        <Floor /> 
+        <Wall /> 
 
-        <Wall />
-
-        // 1. 左側の列 (X = -7.5 に並べる)
-        // Y=-5 は床面の座標を基準に、Bookshelf.tsx内のMODEL_Y_ADJUSTMENT (2.0)で調整される想定
-        <Bookshelf position={[-7.5, -5, 0]} rotationY={0} bookIdOffset={1000} /> // 部屋の手前
-        <Bookshelf position={[-7.5, -5, 10]} rotationY={0} bookIdOffset={2000} /> // 奥に連ねる
-        <Bookshelf position={[-7.5, -5, 20]} rotationY={0} bookIdOffset={3000} /> // さらに奥
-
-        // 2. 右側の列 (X = 7.5 に並べる)
-        // rotationY={Math.PI} で180度回転させ、左の列と向かい合わせに
-        <Bookshelf position={[7.5, -5, 0]} rotationY={Math.PI} bookIdOffset={4000} /> 
-        <Bookshelf position={[7.5, -5, 10]} rotationY={Math.PI} bookIdOffset={5000} /> 
-        <Bookshelf position={[7.5, -5, 20]} rotationY={Math.PI} bookIdOffset={6000} /> 
+        {/* 💡 【復元】複数本棚の配置とIDオフセットの適用 */}
+        {/* ID: 1000番台 */}
+        <Bookshelf position={[-7.5, -5, 0]} rotationY={0} bookIdOffset={1000} /> 
+        {/* ID: 2000番台 */}
+        <Bookshelf position={[-7.5, -5, 10]} rotationY={0} bookIdOffset={2000} />
+        {/* ID: 3000番台 */}
+        <Bookshelf position={[7.5, -5, 0]} rotationY={Math.PI} bookIdOffset={3000} /> 
+        {/* ID: 4000番台 */}
+        <Bookshelf position={[7.5, -5, 10]} rotationY={Math.PI} bookIdOffset={4000} />
         
-        {/*
-          // これまでコメントアウトされていた単一の本棚は削除します
-          <Bookshelf position={[0, -5, 0]} rotationY={0} /> 
-        */}
+        <CameraFocus /> 
         
-        <OrbitControls enableDamping dampingFactor={0.05} />
       </Suspense>
     </Canvas>
   );
 }
 // ----------------------------------------------------
 
+
 // ----------------------------------------------------
-// 本の詳細ページ (本格的なHTML表示に修正)
+// 本の詳細ページ (データ連動 & オーバーレイ表示)
 // ----------------------------------------------------
 function BookDetailPage() {
-    const { id } = useParams(); // URLから文字列のIDを取得
-    const bookId = Number(id); // IDを数値に変換
+    const { id } = useParams(); 
+    const bookId = Number(id);
 
-    // 💡 IDに基づいて本のデータを検索
+    // 💡 インポートした findBookById を使用
     const book: BookMetadata | undefined = findBookById(bookId);
+    
+    // 💡 オーバーレイ表示のためのスタイル (3Dシーンを背景に残す)
+    const overlayStyle: React.CSSProperties = {
+        position: 'fixed', 
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 10, 
+        padding: '40px', 
+        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 半透明
+        overflowY: 'auto'
+    };
 
     if (!book) {
         return (
-            <div style={{ padding: '40px', backgroundColor: '#f5f5f5', minHeight: '100vh', textAlign: 'center' }}>
+            <div style={{ ...overlayStyle, backgroundColor: 'rgba(245, 245, 245, 0.95)', textAlign: 'center' }}>
                 <h1 style={{color: '#E53E3E'}}>Error: Book Not Found</h1>
                 <p style={{fontSize: '1.2em'}}>ID: {id} に対応する本は見つかりませんでした。</p>
                 <Link to="/" style={{display: 'inline-block', marginTop: '20px', padding: '10px 20px', backgroundColor: '#007BFF', color: 'white', textDecoration: 'none', borderRadius: '5px'}}>
@@ -110,7 +113,7 @@ function BookDetailPage() {
     
     // 💡 データが見つかった場合の表示
     return (
-        <div style={{ padding: '40px', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
+        <div style={overlayStyle}>
             <h1 style={{ borderBottom: `3px solid ${book.color}`, paddingBottom: '10px' }}>{book.title}</h1>
             <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', marginTop: '30px' }}>
                 <img 
@@ -133,20 +136,20 @@ function BookDetailPage() {
 }
 
 // ----------------------------------------------------
-// メインのAppコンポーネント (ルーティングを処理)
+// メインのAppコンポーネント
 // ----------------------------------------------------
 function App() {
     return (
         <BrowserRouter>
+            {/* LibraryScene (3D) を Routes の外側で常にレンダリング */}
+            <LibraryScene />
+            
             <Routes>
-                {/* 1. ライブラリシーンのルート */}
-                <Route path="/" element={<LibraryScene />} />
-                {/* 2. 本の詳細ページのルート (IDをパラメータとして受け取る) */}
+                {/* /book/:id の時だけ BookDetailPage をオーバーレイで表示 */}
                 <Route path="/book/:id" element={<BookDetailPage />} />
             </Routes>
         </BrowserRouter>
     );
 }
 
-// 💡 App をエクスポート
 export default App;
