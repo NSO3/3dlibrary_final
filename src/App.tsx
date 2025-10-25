@@ -1,4 +1,6 @@
 // src/App.tsx 
+import Home from './components/Home';
+import EmptyPlaceholder from './components/EmptyPlaceholder';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import Bookshelf from './components/Bookshelf'; 
@@ -11,7 +13,7 @@ import CameraFocus from './components/CameraFocus';
 import type { BookMetadata } from './data/bookData'; 
 // 💡 findBookById は値（関数）であるため、通常の 'import' を使用
 import { findBookById } from './data/bookData';
-
+import '../css/BookDetailPage.css';
 
 interface AdjusterProps {
     intensity: number;
@@ -77,58 +79,52 @@ function LibraryScene() {
 
 
 // ----------------------------------------------------
-// 本の詳細ページ (データ連動 & オーバーレイ表示)
+// 本の詳細ページ (スタイル分離済み)
 // ----------------------------------------------------
 function BookDetailPage() {
     const { id } = useParams(); 
     const bookId = Number(id);
 
-    // 💡 インポートした findBookById を使用
     const book: BookMetadata | undefined = findBookById(bookId);
-    
-    // 💡 オーバーレイ表示のためのスタイル (3Dシーンを背景に残す)
-    const overlayStyle: React.CSSProperties = {
-        position: 'fixed', 
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 10, 
-        padding: '40px', 
-        backgroundColor: 'rgba(255, 255, 255, 0.95)', // 半透明
-        overflowY: 'auto'
-    };
+
+    // 💡 【修正点２】スタイルオブジェクトを削除し、クラス名に置き換え
+    const overlayClass = "book-detail-overlay";
 
     if (!book) {
         return (
-            <div style={{ ...overlayStyle, backgroundColor: 'rgba(245, 245, 245, 0.95)', textAlign: 'center' }}>
+            // エラー時のコンテナにクラスを適用
+            <div className={`${overlayClass} error-state`}>
                 <h1 style={{color: '#E53E3E'}}>Error: Book Not Found</h1>
                 <p style={{fontSize: '1.2em'}}>ID: {id} に対応する本は見つかりませんでした。</p>
-                <Link to="/" style={{display: 'inline-block', marginTop: '20px', padding: '10px 20px', backgroundColor: '#007BFF', color: 'white', textDecoration: 'none', borderRadius: '5px'}}>
+                <Link to="/" className="book-detail-return-link">
                     図書館に戻る
                 </Link>
             </div>
         );
     }
     
-    // 💡 データが見つかった場合の表示
     return (
-        <div style={overlayStyle}>
+        // 💡 【修正点３】クラス名に置き換え
+        <div className={overlayClass}>
             <h1 style={{ borderBottom: `3px solid ${book.color}`, paddingBottom: '10px' }}>{book.title}</h1>
-            <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', marginTop: '30px' }}>
+            
+            {/* 💡 【修正点４】flexコンテナにクラスを適用 */}
+            <div className="book-detail-content">
                 <img 
                     src={book.imageUrl} 
                     alt={book.title} 
                     style={{ width: '200px', height: 'auto', border: `5px solid ${book.color}` }} 
                 />
                 <div>
-                    <p style={{ fontSize: '1.4em', fontWeight: 'bold' }}>著者: {book.author}</p>
-                    <p style={{ marginTop: '20px', fontSize: '1.1em', lineHeight: '1.6' }}>{book.summary}</p>
+                    {/* 💡 【修正点５】著者名と概要にクラスを適用 */}
+                    <p className="book-detail-author">著者: {book.author}</p>
+                    <p className="book-detail-summary">{book.summary}</p>
                     <p style={{ fontSize: '0.9em', color: '#666', marginTop: '10px' }}>* Book ID: {book.id}</p>
                 </div>
             </div>
             
-            <Link to="/" style={{display: 'inline-block', marginTop: '40px', padding: '10px 20px', backgroundColor: '#007BFF', color: 'white', textDecoration: 'none', borderRadius: '5px'}}>
+            {/* 💡 【修正点６】Linkにクラスを適用 */}
+            <Link to="/" className="book-detail-return-link">
                 図書館に戻る
             </Link>
         </div>
@@ -145,8 +141,9 @@ function App() {
             <LibraryScene />
             
             <Routes>
-                {/* /book/:id の時だけ BookDetailPage をオーバーレイで表示 */}
+                <Route path="/" element={<Home />} />
                 <Route path="/book/:id" element={<BookDetailPage />} />
+                <Route path="/focus/:id" element={<EmptyPlaceholder />} />
             </Routes>
         </BrowserRouter>
     );
