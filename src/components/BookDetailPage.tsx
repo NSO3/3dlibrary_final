@@ -4,8 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 // 💡 データファイルへのインポートパスを調整
 import type { BookMetadata } from '../data/bookData'; 
 import { findBookById } from '../data/bookData';
-// 💡 CSSファイルへのインポートパスを調整 (src/componentsからプロジェクトルートのcssフォルダへ)
-import '../../css/BookDetailPage.css'; 
+import '../css/BookDetailPage.css'; 
 
 
 // ----------------------------------------------------
