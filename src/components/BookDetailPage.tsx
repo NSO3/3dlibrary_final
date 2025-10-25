@@ -24,13 +24,12 @@ function BookDetailPage() {
             <div className={`${overlayClass} error-state`}>
                 <h1 style={{color: '#E53E3E'}}>Error: Book Not Found</h1>
                 <p style={{fontSize: '1.2em'}}>ID: {id} に対応する本は見つかりませんでした。</p>
-                <Link to="/" className="book-detail-return-link">
+                <Link to="/library" className="book-detail-return-link">
                     図書館に戻る
                 </Link>
             </div>
         );
     }
-    
     return (
         <div className={overlayClass}>
             <h1 style={{ borderBottom: `3px solid ${book.color}`, paddingBottom: '10px' }}>{book.title}</h1>
@@ -48,7 +47,7 @@ function BookDetailPage() {
                 </div>
             </div>
             
-            <Link to="/" className="book-detail-return-link">
+            <Link to="/library" className="book-detail-return-link">
                 図書館に戻る
             </Link>
         </div>

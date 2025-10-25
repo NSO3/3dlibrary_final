@@ -1,0 +1,67 @@
+/* src/css/TopPage.css */
+
+.top-page-container {
+    /* 画面全体に固定表示し、3Dシーンの上に重ねる */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100; /* 3Dシーンや詳細ページオーバーレイより高い z-index */
+    background: linear-gradient(135deg, #f0f4f8, #c8d9e8); /* 背景 */
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.top-page-content {
+    text-align: center;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.top-page-content h1 {
+    font-size: 3em;
+    color: #007BFF;
+    margin-bottom: 10px;
+}
+
+.top-page-content p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+.start-button {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: #007BFF;
+    color: white !important;
+    text-decoration: none;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.1s;
+    margin-bottom: 30px;
+}
+
+.start-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.top-page-nav a {
+    margin: 0 15px;
+    color: #007BFF;
+    text-decoration: none;
+    font-size: 1em;
+}
+
+.top-page-nav a:hover {
+    text-decoration: underline;
+}

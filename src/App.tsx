@@ -5,15 +5,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // 💡 分離したコンポーネントをインポート
 import LibraryScene from './scenes/LibraryScene'; 
 import BookDetailPage from './components/BookDetailPage'; 
-
-// 既存のコンポーネント
+import TopPage from './components/TopPage';
 import Home from './components/Home';
 import EmptyPlaceholder from './components/EmptyPlaceholder';
-
-// ★ 以前あった、Canvas, useThree, Environment, Bookshelf, Floor, Wall などの
-// Three.js関連のインポートは LibraryScene.tsx に移動しました。
-
-// ★ LibraryScene と BookDetailPage 関数も削除されました。
 
 // ----------------------------------------------------
 // メインのAppコンポーネント
@@ -25,7 +19,12 @@ function App() {
             <LibraryScene />
             
             <Routes>
-                <Route path="/" element={<Home />} />
+                {/* 💡 【修正点１】ルートパス("/")をTopPageに割り当て */}
+                <Route path="/" element={<TopPage />} /> 
+                
+                {/* 💡 【修正点２】従来のライブラリシーンを新しいパス("/library")に移動 */}
+                <Route path="/library" element={<Home />} /> 
+                
                 <Route path="/book/:id" element={<BookDetailPage />} />
                 <Route path="/focus/:id" element={<EmptyPlaceholder />} />
             </Routes>
