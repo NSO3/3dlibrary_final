@@ -1,0 +1,138 @@
+.search-page-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 50; 
+    background-color: rgba(250, 250, 250, 0.98);
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.search-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 900px;
+    height: fit-content;
+    position: relative;
+}
+
+.search-content h1 {
+    color: #007BFF;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+/* フォームと入力フィールド */
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 15px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1.1em;
+}
+
+.search-button {
+    padding: 15px 30px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
+}
+
+/* 検索結果エリア */
+.search-results-list h2 {
+    font-size: 1.4em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.no-results {
+    color: #6c757d;
+    text-align: center;
+    padding: 30px;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* レスポンシブなグリッド */
+    gap: 25px;
+}
+
+.book-result-item {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.book-result-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.book-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+}
+
+.book-link img {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border: 5px solid; /* book.colorが入る場所 */
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.book-info h3 {
+    font-size: 1em;
+    margin: 0;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.book-info p {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin: 3px 0 0 0;
+}
+
+.back-to-top-link {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    color: #007BFF;
+    text-decoration: none;
+    font-size: 1em;
+}

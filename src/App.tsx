@@ -7,6 +7,7 @@ import LibraryScene from './scenes/LibraryScene';
 import BookDetailPage from './components/BookDetailPage'; 
 import TopPage from './components/TopPage';
 import CreateBookPage from './components/CreateBookPage';
+import SearchPage from './components/SearchPage'; 
 import Home from './components/Home';
 import EmptyPlaceholder from './components/EmptyPlaceholder';
 
@@ -20,13 +21,11 @@ function App() {
             <LibraryScene />
             
             <Routes>
-                {/* 💡 【修正点１】ルートパス("/")をTopPageに割り当て */}
                 <Route path="/" element={<TopPage />} /> 
-                
-                {/* 💡 【修正点２】従来のライブラリシーンを新しいパス("/library")に移動 */}
                 <Route path="/library" element={<Home />} /> 
-                {/* 💡 【新規追加】本の作成機能のルート */}
                 <Route path="/create-book" element={<CreateBookPage />} />
+                {/* 💡 【新規追加】本の検索機能のルート */}
+                <Route path="/search" element={<SearchPage />} />
                 <Route path="/book/:id" element={<BookDetailPage />} />
                 <Route path="/focus/:id" element={<EmptyPlaceholder />} />
             </Routes>
