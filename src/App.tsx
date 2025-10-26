@@ -8,6 +8,7 @@ import BookDetailPage from './components/BookDetailPage';
 import TopPage from './components/TopPage';
 import CreateBookPage from './components/CreateBookPage';
 import SearchPage from './components/SearchPage'; 
+import ContactPage from './components/ContactPage';
 import Home from './components/Home';
 import EmptyPlaceholder from './components/EmptyPlaceholder';
 
@@ -24,8 +25,9 @@ function App() {
                 <Route path="/" element={<TopPage />} /> 
                 <Route path="/library" element={<Home />} /> 
                 <Route path="/create-book" element={<CreateBookPage />} />
-                {/* 💡 【新規追加】本の検索機能のルート */}
                 <Route path="/search" element={<SearchPage />} />
+                {/* 💡 【新規追加】お問い合わせ機能のルート */}
+                <Route path="/contact" element={<ContactPage />} />
                 <Route path="/book/:id" element={<BookDetailPage />} />
                 <Route path="/focus/:id" element={<EmptyPlaceholder />} />
             </Routes>

@@ -1,0 +1,96 @@
+/* src/css/ContactPage.css */
+
+.contact-page-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    z-index: 50; 
+    background-color: rgba(240, 245, 250, 0.98); /* 明るい背景 */
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.contact-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 650px; /* フォームに最適な幅 */
+    height: fit-content;
+    position: relative;
+}
+
+.contact-content h1 {
+    color: #007BFF;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.contact-content p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input[type="text"], 
+.form-group input[type="email"], 
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+/* アクションボタン */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.submit-button {
+    padding: 12px 30px;
+    background-color: #28a745; /* Green for submission */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #1e7e34;
+}
+
+.back-to-top-link {
+    position: absolute;
+    top: 25px;
+    left: 30px;
+    color: #007BFF;
+    text-decoration: none;
+    font-size: 1em;
+}
