@@ -1,3 +1,11 @@
+// PageContentの型を定義
+export interface PageContent {
+    pageNumber: number;
+    content: string; // ページの本文
+    // 💡 将来的な拡張のためのフィールド
+    // imageUrl?: string; 
+}
+
 // 本のデータの型定義 
 export interface BookMetadata {
   id: number;
@@ -6,6 +14,7 @@ export interface BookMetadata {
   color: string;
   summary: string;
   imageUrl: string;
+  pages: PageContent[];
 }
 
 // 💡 24個のダミーデータ
@@ -17,6 +26,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#007BFF', // Blue
     summary: 'React Three Fiberによる3Dウェブサイトの基盤構築とアーキテクチャ設計を学ぶ。',
     imageUrl: 'https://via.placeholder.com/150/007BFF/FFFFFF?text=Book+1001',
+     pages: [],
   },
   {
     id: 1002,
@@ -25,6 +35,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#38B2AC', // Teal
     summary: '大規模開発における静的型付けの恩恵と高度なユーティリティ型を解説。',
     imageUrl: 'https://via.placeholder.com/150/38B2AC/FFFFFF?text=Book+1002',
+    pages: [],
   },
   {
     id: 1003,
@@ -33,6 +44,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#D53F8C', // Pink
     summary: 'GLSL言語を使ったカスタムマテリアルとエフェクトの作り方をステップバイステップで習得。',
     imageUrl: 'https://via.placeholder.com/150/D53F8C/FFFFFF?text=Book+1003',
+    pages: [],
   },
   {
     id: 1004,
@@ -41,6 +53,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#F6AD55', // Orange
     summary: 'useMemo, useCallback, useEffectの依存関係とレンダリング最適化テクニック集。',
     imageUrl: 'https://via.placeholder.com/150/F6AD55/FFFFFF?text=Book+1004',
+    pages: [],
   },
   {
     id: 2001,
@@ -49,6 +62,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#4A5568', // Gray
     summary: 'PBRに基づいた光と影の計算、およびDirectional Lightのシャドウ調整方法。',
     imageUrl: 'https://via.placeholder.com/150/4A5568/FFFFFF?text=Book+1005',
+    pages: [],
   },
   {
     id: 2002,
@@ -57,6 +71,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#6B46C1', // Purple
     summary: 'CSSアニメーションからReact Springまで、Webで使うアニメーション技術を網羅。',
     imageUrl: 'https://via.placeholder.com/150/6B46C1/FFFFFF?text=Book+1006',
+    pages: [],
   },
   {
     id: 2003,
@@ -65,6 +80,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#3182CE', // Strong Blue
     summary: '大容量の3Dモデルを軽量化し、ウェブで高速表示するための秘訣。',
     imageUrl: 'https://via.placeholder.com/150/3182CE/FFFFFF?text=Book+1007',
+    pages: [],
   },
   {
     id: 2004,
@@ -73,6 +89,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#38A169', // Green
     summary: 'useNavigate, useParamsを活用したSPAのルーティング設計。',
     imageUrl: 'https://via.placeholder.com/150/38A169/FFFFFF?text=Book+1008',
+    pages: [],
   },
   {
     id: 3001,
@@ -81,6 +98,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#ECC944', // Yellow
     summary: 'BlenderやFigmaを使った非プログラミングでの3Dアセット作成術。',
     imageUrl: 'https://via.placeholder.com/150/ECC944/FFFFFF?text=Book+1009',
+    pages: [],
   },
   {
     id: 3002,
@@ -89,6 +107,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#C53030', // Red-Brown
     summary: '物理ベースレンダリングにおけるAlbedo, Roughness, Metalnessの設計。',
     imageUrl: 'https://via.placeholder.com/150/C53030/FFFFFF?text=Book+1010',
+    pages: [],
   },
   // --- 棚3 - ID 1000番台（3段目、1011から1018） ---
   {
@@ -98,6 +117,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#00B5AD', // Cyan
     summary: 'スマートフォンでのWeb 3Dパフォーマンスを向上させるための秘訣。',
     imageUrl: 'https://via.placeholder.com/150/00B5AD/FFFFFF?text=Book+1011',
+    pages: [],
   },
   {
     id: 3004,
@@ -106,6 +126,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#718096', // Slate Gray
     summary: 'HDR環境マップと`toneMappingExposure`による理想的なシーンの明るさ調整。',
     imageUrl: 'https://via.placeholder.com/150/718096/FFFFFF?text=Book+1012',
+    pages: [],
   },
   {
     id: 4001,
@@ -114,6 +135,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#D5570E', // Dark Orange
     summary: 'Emotion, Styled Componentsを使った大規模アプリケーションのCSS管理。',
     imageUrl: 'https://via.placeholder.com/150/D5570E/FFFFFF?text=Book+1013',
+    pages: [],
   },
   {
     id: 4002,
@@ -122,6 +144,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#0058A3', // Deep Blue
     summary: '再利用可能でクリーンなロジックをカプセル化するためのカスタムHook設計パターン。',
     imageUrl: 'https://via.placeholder.com/150/0058A3/FFFFFF?text=Book+1014',
+    pages: [],
   },
   {
     id: 4003,
@@ -130,6 +153,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#805AD5', // Lavender
     summary: 'C++コードをWebAssemblyに変換し、ブラウザで超高速に実行する方法。',
     imageUrl: 'https://via.placeholder.com/150/805AD5/FFFFFF?text=Book+1015',
+    pages: [],
   },
   {
     id: 4004,
@@ -138,6 +162,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#E53E3E', // Red
     summary: 'OrbitControls, MapControlsなどを使った直感的で快適なカメラ操作の実装。',
     imageUrl: 'https://via.placeholder.com/150/E53E3E/FFFFFF?text=Book+1016',
+    pages: [],
   },
   {
     id: 5001,
@@ -146,6 +171,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#00A3C4', // Cyan Blue
     summary: '頂点シェーダーからフラグメントシェーダーまでの処理フローを徹底解剖。',
     imageUrl: 'https://via.placeholder.com/150/00A3C4/FFFFFF?text=Book+1017',
+    pages: [],
   },
   {
     id: 5002,
@@ -154,6 +180,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#2F855A', // Dark Green
     summary: 'XSS, CSRF対策からHTTPS, CSPの設定まで、ウェブアプリケーションの防御戦略。',
     imageUrl: 'https://via.placeholder.com/150/2F855A/FFFFFF?text=Book+1018',
+    pages: [],
   },
   // --- 棚4 - ID 1000番台（4段目、1019から1024） ---
   {
@@ -163,6 +190,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#B83280', // Magenta
     summary: 'LCP, FID, CLSなどのWeb Vitalsを計測し、ユーザー体験を改善する手法。',
     imageUrl: 'https://via.placeholder.com/150/B83280/FFFFFF?text=Book+1019',
+    pages: [],
   },
   {
     id: 5004,
@@ -171,6 +199,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#F6AD55', // Gold
     summary: '非同期処理をストリームとして扱い、宣言的なコードで複雑な状態を管理。',
     imageUrl: 'https://via.placeholder.com/150/F6AD55/FFFFFF?text=Book+1020',
+    pages: [],
   },
   {
     id: 6001,
@@ -179,6 +208,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#1A202C', // Black
     summary: 'rebase, cherry-pick, submoduleなど、チーム開発で役立つ上級テクニック。',
     imageUrl: 'https://via.placeholder.com/150/1A202C/FFFFFF?text=Book+1021',
+    pages: [],
   },
   {
     id: 6002,
@@ -187,6 +217,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#00BFFF', // Sky Blue
     summary: '再利用可能なコンポーネントとガイドラインを整備し、一貫したデザインを実現。',
     imageUrl: 'https://via.placeholder.com/150/00BFFF/FFFFFF?text=Book+1022',
+    pages: [],
   },
   {
     id: 6003,
@@ -195,6 +226,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#A0AEC0', // Light Gray
     summary: '依存関係の解決、セキュリティ、モノレポでのパッケージ管理のベストプラクティス。',
     imageUrl: 'https://via.placeholder.com/150/A0AEC0/FFFFFF?text=Book+1023',
+    pages: [],
   },
   {
     id: 6004,
@@ -203,6 +235,7 @@ export const BOOKS_DATA: BookMetadata[] = [
     color: '#9C4221', // Brown
     summary: 'テストを追加しながら、安全かつ着実に古いコードベースを現代化する方法。',
     imageUrl: 'https://via.placeholder.com/150/9C4221/FFFFFF?text=Book+1024',
+    pages: [],
   },
 ];
 
