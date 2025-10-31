@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/CreateBookPage.css';
 import type { PageContent } from '../data/bookData';
+import axios from 'axios';
 
 // 1. 本の基本情報を管理
 const initialBookState = {
@@ -9,11 +10,14 @@ const initialBookState = {
     author: '',
     color: '#CCCCCC', // デフォルトカラー
     summary: '',
+    imageUrl: '',
 };
 
 const initialPages: PageContent[] = [
     { pageNumber: 1, content: '' } // 常に1ページから開始
 ];
+
+const API_BASE_URL = 'http://localhost:8080/api/v1/books'; // 💡 【追加】バックエンドAPIのURL
 
 const CreateBookPage: React.FC = () => {
     // 💡 フォームの状態管理 (React Hooks)
@@ -60,28 +64,45 @@ const CreateBookPage: React.FC = () => {
         return pages.find(page => page.pageNumber === currentPage)?.content || '';
     };
 
-    // 既存の送信ハンドラ
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        // 💡 ページ数が0またはコンテンツがない場合はアラート
-        const filledPages = pages.filter(p => p.content.trim() !== '');
-        if (filledPages.length === 0) {
-             alert('最低1ページは内容を入力してください。');
-             return;
+const handleSubmit = useCallback(async (e: React.FormEvent) => { // 💡 【修正】非同期関数 (async) に変更
+            e.preventDefault()
+    // 💡 【追加】ブラウザのデフォルト動作（ページリロード）を阻止
+    // ページが空の場合は処理を停止
+        if (pages.length === 0 || pages[0].content.trim() === '') {
+            alert('ページ内容が入力されていません。');
+            return;
         }
 
-        const newBook = {
-            ...bookData,
-            id: Date.now(), // 💡 一時的なID生成
-            imageUrl: 'https://via.placeholder.com/150/000000/FFFFFF?text=NEW+BOOK',
-            pages: filledPages
+        // 送信用のデータ構造を構築（Bookエンティティに合わせた形）
+        const finalBookData = {
+            title: bookData.title,
+            author: bookData.author,
+            summary: bookData.summary,
+            color: bookData.color,
+            imageUrl: bookData.imageUrl,
+            
+            // ページ内容を添付
+            pages: pages.map(page => ({
+                pageNumber: page.pageNumber,
+                content: page.content,
+                // pageId, bookIdなどの関連付けはバックエンド（Java Spring）側で処理されるため不要
+            }))
         };
 
-        console.log('作成された本データ:', newBook);
-        alert('本が作成されました！（データ保存機能は今後実装）');
-        navigate('/library');
-    };
+        try {
+            // 💡 【修正】Axiosを使ってバックエンドAPIにPOSTリクエストを送信
+            const response = await axios.post(API_BASE_URL, finalBookData);;
+            console.log('Book created successfully:', response.data);
+            alert('本が正常に作成されました！');
+            
+            // 成功後、3D図書館シーンへ遷移
+            navigate('/library'); 
+
+        } catch (error) {
+            console.error('Error creating book:', error);
+            alert('本の作成に失敗しました。サーバーが起動しているか確認してください。');
+        }
+    }, [bookData, pages, navigate]); // 依存配列はそのまま
 
     return (
         <div className="create-book-container">
