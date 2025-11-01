@@ -3,7 +3,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; 
 
 // 💡 分離したコンポーネントをインポート
-import LibraryScene from './scenes/LibraryScene'; 
+import LibraryScene from './components/LibraryScene'; 
 import BookDetailPage from './components/BookDetailPage'; 
 import TopPage from './components/TopPage';
 import CreateBookPage from './components/CreateBookPage';

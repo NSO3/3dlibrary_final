@@ -1,62 +1,89 @@
-// src/components/CameraFocus.tsx (リファクタリング後の最終版)
+// src/components/CameraFocus.tsx (最終確定版: 操作性回復 + 視線基準ズーム)
 
 import { CameraControls } from '@react-three/drei';
 import React, { useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import { useCameraFocusState } from '../hooks/useCameraFocusState'; // 💡 カスタムフックをインポート
-import { 
-    DEFAULT_POSITION, 
-    DEFAULT_TARGET, 
-    BOOKSHELF_OFFSETS, 
-    BOOKSHELF_MODEL_Y_CENTER, 
-    ZOOM_OFFSET_X 
-} from '../utils/constants'; // 💡 定数をインポート
+import { useNavigate, useLocation } from 'react-router-dom'; 
+import { useThree } from '@react-three/fiber';
+import { useCameraFocusState } from '../hooks/useCameraFocusState'; 
+import * as THREE from 'three'; 
 
-const CameraFocus: React.FC = () => {
+// ----------------------------------------------------
+// 💡 URLから座標のみを取得するヘルパー関数
+// ----------------------------------------------------
+const getParamsFromUrl = (search: string): { position: THREE.Vector3 | null } => {
+    const params = new URLSearchParams(search);
+    const posString = params.get('pos');
+    
+    if (!posString) return { position: null };
+
+    const [x, y, z] = posString.split(',').map(Number);
+    if (isNaN(x) || isNaN(y) || isNaN(z)) return { position: null };
+
+    return { position: new THREE.Vector3(x, y, z) };
+};
+
+
+const CameraFocus: React.FC = () => { 
   // @ts-ignore
   const controlsRef = useRef<CameraControls | any>(null); 
   const navigate = useNavigate(); 
+  const location = useLocation(); 
+  const { camera } = useThree(); 
   
-  // 💡 【修正点】カスタムフックから状態を取得
-  const { isFocusing, isDetailPage, bookId, offsetId } = useCameraFocusState();
-
+  const { isFocusing, isDetailPage, bookId } = useCameraFocusState(); 
+  
   useEffect(() => {
     const controls = controlsRef.current as any;
     if (!controls) return;
-
+    
+    const { position: bookWorldPosition } = getParamsFromUrl(location.search);
+    
     const handleFocusAnimation = async () => {
-        if (isFocusing && bookId && offsetId) { 
-            // ------------------------------------------------
-            // 1. /focus/ の処理 (アニメーション実行)
-            // ------------------------------------------------
-            const shelfOffsetPosition = BOOKSHELF_OFFSETS[offsetId];
+        // ------------------------------------------------
+        // 1. /focus/ の処理 (アニメーション実行)
+        // ------------------------------------------------
+        if (isFocusing && bookId && bookWorldPosition) { 
+            
+            controls.enabled = false; 
 
-            if (shelfOffsetPosition) {
-                controls.enabled = false; 
+            // ズームイン時のLookAt位置（本の中心）
+            const targetX = bookWorldPosition.x;
+            const targetY = bookWorldPosition.y;
+            const targetZ = bookWorldPosition.z;
 
-                // 💡 【修正点】定数を利用してターゲット位置を計算
-                const targetX = shelfOffsetPosition[0];
-                const targetY = BOOKSHELF_MODEL_Y_CENTER; 
-                const targetZ = shelfOffsetPosition[2];
+            // カメラの現在位置を取得
+            const currentCameraPosition = new THREE.Vector3();
+            camera.getWorldPosition(currentCameraPosition);
+            
+            const offsetDistance = 3.0; // 本から離れる距離
+
+            // 現在のカメラ位置からターゲット（本）への方向ベクトルを計算
+            const direction = new THREE.Vector3()
+                .subVectors(bookWorldPosition, currentCameraPosition) 
+                .normalize(); 
+
+            // カメラの最終位置を決定
+            const cameraFinalPosition = new THREE.Vector3()
+                .copy(bookWorldPosition)
+                .add(direction.multiplyScalar(-offsetDistance)); 
+            cameraFinalPosition.y += 0.5; // わずかなY軸の調整
+
+            try {
+                // アニメーションを待機
+                await controls.setLookAt(
+                    cameraFinalPosition.x, cameraFinalPosition.y, cameraFinalPosition.z, 
+                    targetX, targetY, targetZ, 
+                    true 
+                ); 
                 
-                const cameraX = targetX + (targetX > 0 ? -1 : 1) * ZOOM_OFFSET_X;
-                const cameraY = targetY + 0.5;
-                const cameraZ = targetZ; 
+                // アニメーション完了後に /book/:id に遷移
+                navigate(`/book/${bookId}`); 
                 
-                try {
-                    await controls.setLookAt(
-                        cameraX, cameraY, cameraZ, 
-                        targetX, targetY, targetZ, 
-                        true 
-                    );
-                    
-                    navigate(`/book/${bookId}`); 
-                    
-                } catch (e) {
-                    controls.enabled = true;
-                    console.error("Camera animation failed:", e);
-                }
+            } catch (e) {
+                controls.enabled = true;
+                console.error("Camera animation failed:", e);
             }
+            
         } else if (isDetailPage) { 
             // ------------------------------------------------
             // 2. /book/ の処理 (カメラ位置を維持し、操作を無効化)
@@ -65,32 +92,28 @@ const CameraFocus: React.FC = () => {
             
         } else {
             // ------------------------------------------------
-            // 3. / (ホーム) の処理 (初期位置に戻し、操作を有効化)
+            // 3. /library や / などの操作可能な画面の処理 (初期位置に戻るロジックを維持)
             // ------------------------------------------------
             
             controls.enabled = true; 
-            
-            if (typeof controls.isAnimating === 'function' && !controls.isAnimating()) { 
-                 // 💡 【修正点】定数を利用して初期位置へ戻る
-                 controls.setLookAt(
-                    DEFAULT_POSITION.x, DEFAULT_POSITION.y, DEFAULT_POSITION.z,
-                    DEFAULT_TARGET.x, DEFAULT_TARGET.y, DEFAULT_TARGET.z,
-                    true
-                );
-            }
         }
     };
     
     handleFocusAnimation();
     
-  // 💡 【修正点】依存配列もカスタムフックから取得した値に依存するように変更可能（ここでは location.pathname に依存することで広範囲をカバー）
-  }, [isFocusing, isDetailPage, bookId, offsetId, navigate, controlsRef]);
+  }, [isFocusing, isDetailPage, bookId, navigate, controlsRef, location.pathname, location.search, camera]); 
 
 
   // @ts-ignore
   return (
     <CameraControls 
         ref={controlsRef} 
+        minPolarAngle={Math.PI / 3} 
+        maxPolarAngle={Math.PI / 2} 
+        minDistance={1}             // 💡 操作性を確保するため、1を維持
+        maxDistance={50}            
+        truckSpeed={5}              // 💡 修正: パン操作を有効化
+        dollySpeed={1}              // 💡 修正: ズーム操作を有効化
     />
   );
 };

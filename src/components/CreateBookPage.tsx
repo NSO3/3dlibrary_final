@@ -96,12 +96,17 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => { // 💡 【修�
             alert('本が正常に作成されました！');
             
             // 成功後、3D図書館シーンへ遷移
-            navigate('/library'); 
+            //navigate('/library'); 
 
         } catch (error) {
             console.error('Error creating book:', error);
             alert('本の作成に失敗しました。サーバーが起動しているか確認してください。');
-        }
+        }finally {
+        // 💡 成功または失敗に関わらず、フォーム送信後にライブラリに戻る
+        // 💡 修正: クエリパラメータを追加し、LibrarySceneにデータの再フェッチを促す
+        // navigate('/?refresh=' + Date.now()); // ルートパスにリダイレクトする場合
+        navigate('/library?refresh=' + Date.now()); // /libraryにリダイレクトする場合
+    }
     }, [bookData, pages, navigate]); // 依存配列はそのまま
 
     return (
