@@ -58,6 +58,24 @@ Java Spring APIの実装: 本の作成・取得・検索のための RESTful API
 
 フロントエンドの改修: CreateBookPageの handleSubmit や SearchPage の handleSearch の処理を、ダミー処理から API呼び出し に置き換え。
 
+#### A. API連携ロジックの一元化 (`refactor: API連携ロジックの一元化`)
+-   **ロジック集約**: 書籍関連の全API関数（create, fetchAll, fetchById, search）を **`src/api/bookApi.ts`** に統合。
+-   **エラーハンドリング**: 共通エラーハンドリングロジックを `bookApi.ts` で一元管理し、各ページコンポーネント（CreateBookPage.tsx, LibraryScene.tsx, BookDetailPage.tsx, SearchPage.tsx）から `axios` の直接利用を排除。
+-   **効果**: コードの冗長性を排除し、保守性と拡張性を大幅に向上させた。
+
+#### B. フロントエンド・アーキテクチャの整理 (`refactor: フォルダ構造の整理`)
+-   ルーティングに対応するトップレベルコンポーネントを **`src/components` から `src/pages` へ**移動。
+-   **効果**: コンポーネントの役割（ページ vs 共通部品）が明確化され、プロジェクト構造の可読性が向上。
+
+#### C. 3D/UXデグレードの解消 (`fix(library): ...カメラジャンプを修正`)
+-   **原因**: データ取得時（`isLoading`）に `LibraryScene.tsx` の `<Canvas>` がアンマウントされることで、カメラが初期位置に強制リセットされるデグレードが発生していた。
+-   **解決策**: ローディング表示を `Canvas` の外側に配置する **CSSオーバーレイ方式**に修正。`Canvas` を常にマウント状態に保つことで、`CameraControls` の初期化を防いだ。
+-   **効果**: 詳細ページから戻った際、カメラが最後にフォーカスした位置に留まる正しい挙動が回復し、安定したUXを実現。
+
+#### D. バックエンドの構造安定化 (`Fix: Stop infinite recursion...`)
+-   Java Spring Bootのエンティティ（Book/Page）間の関係性について、JSONシリアライズ時の無限再帰を防ぐため **`@JsonManagedReference` / `@JsonBackReference`** を導入。
+-   DB保存時の再帰を防ぐため **`@ToString.Exclude` / `@EqualsAndHashCode.Exclude`** を導入。
+
 2. サーバー機能の実装（ログイン必須）
 下書き保存: 作成中の本を一時的にサーバーに保存する機能。
 
