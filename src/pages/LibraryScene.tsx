@@ -10,10 +10,10 @@ import { useLocation } from 'react-router-dom';
 import { fetchAllBooks } from '../api/bookApi'; 
 
 // 💡 コンポーネントのインポートパス
-import Bookshelf from './Bookshelf'; 
-import Floor from './Floor'; 
-import Wall from './Wall';   
-import CameraFocus from './CameraFocus'; // カメラ制御
+import Bookshelf from '../components/Bookshelf'; 
+import Floor from '../components/Floor'; 
+import Wall from '../components/Wall';   
+import CameraFocus from '../components/CameraFocus'; // カメラ制御
 import type { BookMetadata } from '../data/bookData'; 
 
 // ----------------------------------------------------
