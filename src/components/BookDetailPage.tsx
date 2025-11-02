@@ -2,15 +2,11 @@
 
 import { useEffect, useState } from 'react'; 
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios'; 
 // 💡 BookMetadataの型定義をインポート
 import type { BookMetadata } from '../data/bookData'; 
 // import { findBookById } from '../data/bookData'; // ダミーデータ関数は不要なので削除
 import '../css/BookDetailPage.css'; 
-
-
-// 💡 APIエンドポイントの定義
-const API_BASE_URL = 'http://localhost:8080/api/v1/books'; 
+import { fetchBookById } from '../api/bookApi';
 
 
 // ----------------------------------------------------
@@ -35,25 +31,23 @@ function BookDetailPage() {
             return;
         }
 
-        const fetchBook = async () => {
-            setIsLoading(true); 
-            try {
-                // API: GET /api/v1/books/{id} を呼び出し
-                const response = await axios.get<BookMetadata>(`${API_BASE_URL}/${bookId}`);
-                setBook(response.data);
-                setError(null);
-            } catch (err) {
-                console.error(`Failed to fetch book ${bookId}:`, err);
-                // エラーメッセージを設定
-                setError(`ID: ${bookId} に対応する書籍が見つかりませんでした。サーバーが起動しているか、IDが正しいか確認してください。`);
-                setBook(null);
-            } finally {
-                setIsLoading(false);
+        const loadBook = async () => {
+            setIsLoading(true);
+            setError(null);
+            
+            // 💡 API呼び出しに置き換え
+            const data = await fetchBookById(bookId); 
+            
+            if (data) {
+                setBook(data);
+            } else {
+                setError(`書籍ID: ${bookId} の詳細情報を取得できませんでした。`);
             }
+            setIsLoading(false);
         };
 
-        fetchBook();
-    }, [bookId]); // bookIdが変更されたときに再実行
+        loadBook();
+    }, [bookId]);
 
 
     const overlayClass = "book-detail-overlay";

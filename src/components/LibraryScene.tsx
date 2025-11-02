@@ -3,7 +3,12 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 // 💡 useLocationを追加 (データ再フェッチ用)
 import { useLocation } from 'react-router-dom'; 
-import axios from 'axios'; 
+// 💡 【修正点 1】axios のインポートを削除
+// import axios from 'axios'; 
+
+// 💡 【修正点 2】fetchAllBooks 関数をインポート
+import { fetchAllBooks } from '../api/bookApi'; 
+
 // 💡 コンポーネントのインポートパス
 import Bookshelf from './Bookshelf'; 
 import Floor from './Floor'; 
@@ -14,7 +19,6 @@ import type { BookMetadata } from '../data/bookData';
 // ----------------------------------------------------
 // 環境設定とデータ取得
 // ----------------------------------------------------
-const API_BASE_URL = 'http://localhost:8080/api/v1/books'; 
 
 interface AdjusterProps {
     intensity: number;
@@ -46,14 +50,20 @@ function LibraryScene() {
     // 💡 データ取得ロジック (location.searchが変わるたびに再実行 = ページ遷移/リフレッシュに対応)
     useEffect(() => {
         const fetchBooks = async () => {
+            setIsLoading(true);
+            setError(null);
+
             try {
-                // APIから書籍リストを取得
-                const response = await axios.get<BookMetadata[]>(API_BASE_URL);
-                setBooks(response.data); 
-                setError(null);
+                // 💡 【修正点 4】fetchAllBooks 関数を使用して書籍リストを取得
+                const data = await fetchAllBooks(); 
+                
+                // fetchAllBooksはエラー発生時も空配列を返すため、データチェックは不要
+                setBooks(data); 
             } catch (err) {
-                console.error("Failed to fetch books:", err);
-                setError("書籍データの取得に失敗しました。サーバーが起動しているか確認してください。");
+                // fetchAllBooks は API レベルのエラーを内部で処理し、空配列を返すため、
+                // ここでキャッチされるのは主にネットワークレベルのエラーのみ
+                console.error("Failed to fetch books in LibraryScene:", err);
+                setError("書籍データの取得中に予期せぬエラーが発生しました。");
             } finally {
                 setIsLoading(false);
             }

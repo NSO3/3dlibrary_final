@@ -1,8 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/CreateBookPage.css';
-import type { PageContent } from '../data/bookData';
-import axios from 'axios';
+import type { PageContent } from '../data/bookData'; 
+// 💡 【修正点 1】axios のインポートを削除
+// import axios from 'axios'; 
+// 💡 【修正点 2】新しく作成した createBook 関数をインポート
+import { createBook } from '../api/bookApi'; // 💡 ファイルパスを修正: ../api/bookApi
 
 // 1. 本の基本情報を管理
 const initialBookState = {
@@ -17,15 +20,17 @@ const initialPages: PageContent[] = [
     { pageNumber: 1, content: '' } // 常に1ページから開始
 ];
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/books'; // 💡 【追加】バックエンドAPIのURL
+// 💡 【修正点 3】API_BASE_URL の直接定義を削除 (bookApi.tsで定義済みのため)
+// const API_BASE_URL = 'http://localhost:8080/api/v1/books'; 
 
 const CreateBookPage: React.FC = () => {
     // 💡 フォームの状態管理 (React Hooks)
- const [bookData, setBookData] = useState(initialBookState);
+    const [bookData, setBookData] = useState(initialBookState);
     // 💡 ページ情報の配列を管理
     const [pages, setPages] = useState<PageContent[]>(initialPages);
     // 💡 現在編集中のページ番号を管理
     const [currentPage, setCurrentPage] = useState(1);
+    const [isSubmitting, setIsSubmitting] = useState(false); // 💡 送信中フラグを追加（元のコードにはないが、追加を推奨）
 
     const navigate = useNavigate();
 
@@ -64,14 +69,18 @@ const CreateBookPage: React.FC = () => {
         return pages.find(page => page.pageNumber === currentPage)?.content || '';
     };
 
-const handleSubmit = useCallback(async (e: React.FormEvent) => { // 💡 【修正】非同期関数 (async) に変更
-            e.preventDefault()
-    // 💡 【追加】ブラウザのデフォルト動作（ページリロード）を阻止
-    // ページが空の場合は処理を停止
+    const handleSubmit = useCallback(async (e: React.FormEvent) => { 
+        e.preventDefault()
+        
+        if (isSubmitting) return; // 二重送信防止
+        
+        // ページが空の場合は処理を停止
         if (pages.length === 0 || pages[0].content.trim() === '') {
             alert('ページ内容が入力されていません。');
             return;
         }
+
+        setIsSubmitting(true); // 送信開始
 
         // 送信用のデータ構造を構築（Bookエンティティに合わせた形）
         const finalBookData = {
@@ -85,29 +94,32 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => { // 💡 【修�
             pages: pages.map(page => ({
                 pageNumber: page.pageNumber,
                 content: page.content,
-                // pageId, bookIdなどの関連付けはバックエンド（Java Spring）側で処理されるため不要
             }))
         };
 
         try {
-            // 💡 【修正】Axiosを使ってバックエンドAPIにPOSTリクエストを送信
-            const response = await axios.post(API_BASE_URL, finalBookData);;
-            console.log('Book created successfully:', response.data);
-            alert('本が正常に作成されました！');
-            
-            // 成功後、3D図書館シーンへ遷移
-            //navigate('/library'); 
+            // 💡 【修正点 4】 createBook 関数で API 呼び出しに置き換え
+            const result = await createBook(finalBookData); 
+
+            if (result) {
+                console.log('Book created successfully:', result);
+                alert('本が正常に作成されました！');
+                
+                // 成功後、3D図書館シーンへ遷移し、リフレッシュを促す
+                navigate('/library?refresh=' + Date.now()); 
+            } else {
+                // createBookがnullを返した場合（APIエラーハンドリング内でconsole.errorが出力されている）
+                alert('本の作成に失敗しました。コンソールを確認してください。');
+            }
 
         } catch (error) {
-            console.error('Error creating book:', error);
-            alert('本の作成に失敗しました。サーバーが起動しているか確認してください。');
-        }finally {
-        // 💡 成功または失敗に関わらず、フォーム送信後にライブラリに戻る
-        // 💡 修正: クエリパラメータを追加し、LibrarySceneにデータの再フェッチを促す
-        // navigate('/?refresh=' + Date.now()); // ルートパスにリダイレクトする場合
-        navigate('/library?refresh=' + Date.now()); // /libraryにリダイレクトする場合
-    }
-    }, [bookData, pages, navigate]); // 依存配列はそのまま
+            // ネットワークエラーなど、fetch自体が失敗した場合
+            console.error('Network or unexpected error during book creation:', error);
+            alert('本の作成に失敗しました。');
+        } finally {
+            setIsSubmitting(false); // 送信終了
+        }
+    }, [bookData, pages, navigate, isSubmitting]); // 依存配列に isSubmitting を追加
 
     return (
         <div className="create-book-container">
@@ -159,11 +171,14 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => { // 💡 【修�
                             rows={15} 
                             required 
                             className="page-content-textarea"
+                            disabled={isSubmitting} // 💡 送信中は無効化
                         />
                     </div>
 
                     <div className="form-actions">
-                        <button type="submit" className="submit-button">本を公開する</button>
+                        <button type="submit" className="submit-button" disabled={isSubmitting}>
+                            {isSubmitting ? '公開中...' : '本を公開する'}
+                        </button>
                         <Link to="/" className="cancel-link">キャンセルして戻る</Link>
                     </div>
                 </form>
